@@ -1,6 +1,14 @@
+use std::iter;
 use std::io;
 use std::path::PathBuf;
 use std::process::Command;
+
+use nix::unistd;
+use std::ffi::CString;
+
+// if true, we replace the current process by the new launchable.
+// This might prove useful in some cases but isn't used right now.
+const USE_EXECV: bool = false;
 
 /// description of a possible launch of an external program
 /// (might be more complex, and a sequence of things to try, in the future).
@@ -34,6 +42,15 @@ impl Launchable {
                 print!(" {}", &arg);
             }
             println!();
+        } else if USE_EXECV {
+            debug!("use execv!");
+            let args: Vec<_> = iter::once(&self.exe).chain(&self.args)
+                .map(|s| CString::new(&s[..]).expect("not a proper CString"))
+                .collect();
+            unistd::execv(
+                &args[0],
+                &args,
+            ).expect("Failed");
         } else {
             Command::new(&self.exe)
                 .args(self.args.iter())
