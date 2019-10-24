@@ -19,6 +19,7 @@ const BASH_FUNC: &str = r#"
 # It's needed because some shell commands, like `cd`,
 # have no useful effect if executed in a subshell.
 function br {
+    local d f code
     f=$(mktemp)
     (
 	set +e
