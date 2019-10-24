@@ -19,23 +19,12 @@ const BASH_FUNC: &str = r#"
 # It's needed because some shell commands, like `cd`,
 # have no useful effect if executed in a subshell.
 function br {
-    local d f code
+    local d f code=0
     f=$(mktemp)
-    (
-	set +e
-	broot --outcmd "$f" "$@"
-	code=$?
-	if [ "$code" != 0 ]; then
-	    rm -f "$f"
-	    exit "$code"
-	fi
-    )
-    code=$?
-    if [ "$code" != 0 ]; then
-	return "$code"
-    fi
+    broot --outcmd="$f" "$@" || code=$?
     d=$(cat "$f")
     rm -f "$f"
+    [ "$code" != 0 ] && return "$code"
     eval "$d"
 }
 "#;
